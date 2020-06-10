@@ -21,6 +21,7 @@ import com.karumi.dexter.MultiplePermissionsReport
 import com.karumi.dexter.PermissionToken
 import com.karumi.dexter.listener.PermissionRequest
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener
+import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
 
@@ -33,6 +34,8 @@ class MainActivity : AppCompatActivity() {
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
 
         if (!isLocationEnabled()) {
+            //端末自体のGPSがoffの場合の処理
+
             Toast.makeText(
                 this, "Location provider is turned off. Plaese turn it on.", Toast.LENGTH_SHORT
             ).show()
@@ -40,33 +43,38 @@ class MainActivity : AppCompatActivity() {
             val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
             startActivity(intent)
         } else {
-            Dexter.withActivity(this)
-                .withPermissions(
-                    Manifest.permission.ACCESS_FINE_LOCATION,
-                    Manifest.permission.ACCESS_COARSE_LOCATION
-                )
-                .withListener(object : MultiplePermissionsListener {
-                    override fun onPermissionsChecked(report: MultiplePermissionsReport?) {
-                        if (report!!.areAllPermissionsGranted()) {
-                            // Todo add requestLocationData()
-                            requestLocationData()
-                        }
-
-                        if (report.isAnyPermissionPermanentlyDenied) {
-                            Toast.makeText(
-                                this@MainActivity, "", Toast.LENGTH_SHORT
-                            ).show()
-                        }
-                    }
-
-                    override fun onPermissionRationaleShouldBeShown(permissons: MutableList<PermissionRequest>?, token: PermissionToken?) {
-                        // TODO - implement showRationalDialogForPermissions()
-                        showRationalDialogForPermissions()
-                    }
-
-                }).onSameThread()
-                .check()
+            requestPermission()
         }
+    }
+
+    // アプリ自体のGPSのpermissionをrequest
+    private fun requestPermission() {
+        Dexter.withActivity(this)
+            .withPermissions(
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            )
+            .withListener(object : MultiplePermissionsListener {
+                override fun onPermissionsChecked(report: MultiplePermissionsReport?) {
+                    if (report!!.areAllPermissionsGranted()) {
+                        // Todo add requestLocationData()
+                        requestLocationData()
+                    }
+
+                    if (report.isAnyPermissionPermanentlyDenied) {
+                        Toast.makeText(
+                            this@MainActivity, "", Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+
+                override fun onPermissionRationaleShouldBeShown(permissons: MutableList<PermissionRequest>?, token: PermissionToken?) {
+                    // TODO - implement showRationalDialogForPermissions()
+                    showRationalDialogForPermissions()
+                }
+
+            }).onSameThread()
+            .check()
     }
 
     private fun isLocationEnabled(): Boolean {
@@ -102,6 +110,7 @@ class MainActivity : AppCompatActivity() {
         mFusedLocationProviderClient.requestLocationUpdates(mLocationRequest, mLocationCallback, Looper.myLooper())
     }
 
+    // callbackで位置情報を取得，ここは非同期の処理なので
     private val mLocationCallback = object : LocationCallback() {
         override fun onLocationResult(locationResult: LocationResult) {
             val mLastLocation : Location = locationResult.lastLocation
@@ -110,6 +119,20 @@ class MainActivity : AppCompatActivity() {
             Log.i("latitude", "$latitude")
             val longitude = mLastLocation.longitude
             Log.i("longitude", "$longitude")
+
+            tv_latitude.text = "Lat: " + latitude.toString()
+            tv_longitude.text = "Lon: " + longitude.toString()
+
+            getLocationWeatherDetail()
+        }
+    }
+
+    // スマホがインターネットに接続されているかcheck
+    private fun getLocationWeatherDetail() {
+        if(Constant.isNetworkAvailable(this)) {
+
+        } else {
+
         }
     }
 }
