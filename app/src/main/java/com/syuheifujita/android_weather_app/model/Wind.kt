@@ -1,4 +1,4 @@
-package com.syuheifujita.android_weather_app.Model
+package com.syuheifujita.android_weather_app.model
 
 import java.io.Serializable
 

@@ -2,6 +2,7 @@ package com.syuheifujita.android_weather_app
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.Dialog
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
@@ -21,11 +22,18 @@ import com.karumi.dexter.MultiplePermissionsReport
 import com.karumi.dexter.PermissionToken
 import com.karumi.dexter.listener.PermissionRequest
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener
-import kotlinx.android.synthetic.main.activity_main.*
+import com.syuheifujita.android_weather_app.model.WeatherResponseModel
+import com.syuheifujita.android_weather_app.network.WeatherService
+import retrofit2.Call
+import retrofit2.Response
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var mFusedLocationProviderClient: FusedLocationProviderClient
+
+    private var mProgressDialog: Dialog? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -120,18 +128,96 @@ class MainActivity : AppCompatActivity() {
             val longitude = mLastLocation.longitude
             Log.i("longitude", "$longitude")
 
-            tv_latitude.text = "Lat: " + latitude.toString()
-            tv_longitude.text = "Lon: " + longitude.toString()
-
-            getLocationWeatherDetail()
+            getLocationWeatherDetail(latitude, longitude)
         }
     }
 
     // スマホがインターネットに接続されているかcheck
-    private fun getLocationWeatherDetail() {
+    private fun getLocationWeatherDetail(latitude: Double, longitude: Double) {
         if(Constant.isNetworkAvailable(this)) {
+            // スマホがインターネットに接続されている場合
+
+            // apiのBaseUrlを作成
+            val retrofit: Retrofit = Retrofit
+                .Builder()
+                .baseUrl(Constant.BASE_URL)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build()
+
+            // interfaceを初期化
+            val service: WeatherService = retrofit
+                .create<WeatherService>(WeatherService::class.java)
+
+            // クエリを作成
+            val listCall: Call<WeatherResponseModel> = service.getWeather(
+                latitude, longitude, Constant.METRIC_UNIT, Constant.APP_ID
+            )
+
+            showCustomDialog()
+
+            listCall.enqueue(object : retrofit2.Callback<WeatherResponseModel> {
+
+                override fun onFailure(call: Call<WeatherResponseModel>, t: Throwable) {
+                    hideProgressDialog()
+                    Log.e("Errorrrrrr", t!!.message.toString())
+                }
+
+                @SuppressLint("SetTextI18n")
+                override fun onResponse(
+                    call: Call<WeatherResponseModel>,
+                    response: Response<WeatherResponseModel>
+                ) {
+                    if(response.isSuccessful) {
+
+                        hideProgressDialog()
+
+                        val weatherList: WeatherResponseModel? = response.body()
+                        Log.i("Response result", "$weatherList")
+
+                        if (weatherList != null) {
+                            setupUI(weatherList)
+                        }
+                    } else {
+
+                        hideProgressDialog()
+
+                        val rc = response.code()
+                        when(rc){
+                            400 -> {
+                                Log.e("Error 400", "Bad connection")
+                            }
+                            404 -> {
+                                Log.e("Error 404", "Not Found")
+                            }
+                            else -> {
+                                Log.e("Error", "Generic Error")
+                            }
+                        }
+                    }
+                }
+            })
 
         } else {
+            // スマホがインターネットに接続されていない場合
+
+        }
+    }
+
+    private fun showCustomDialog() {
+        mProgressDialog = Dialog(this)
+        mProgressDialog!!.setContentView(R.layout.dialog_custom_progress)
+        mProgressDialog!!.show()
+    }
+
+    private fun hideProgressDialog() {
+        if(mProgressDialog != null){
+            mProgressDialog!!.dismiss()
+        }
+    }
+
+    private fun setupUI(weatherList: WeatherResponseModel) {
+        for(i in weatherList.weather.indices) {
+            Log.i("Weather Name", weatherList.weather.toString())
 
         }
     }

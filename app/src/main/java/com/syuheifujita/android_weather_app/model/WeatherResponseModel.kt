@@ -1,4 +1,4 @@
-package com.syuheifujita.android_weather_app.Model
+package com.syuheifujita.android_weather_app.model
 
 import java.io.Serializable
 
@@ -12,7 +12,7 @@ data class WeatherResponseModel (
     val wind: Wind,
     val clouds: Clouds,
     val dt: Int,
-    val valsys: Sys,
+    val sys: Sys,
     val id: Int,
     val name: String,
     val cod: Int
