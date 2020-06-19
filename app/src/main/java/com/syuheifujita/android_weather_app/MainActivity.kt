@@ -24,6 +24,7 @@ import com.karumi.dexter.listener.PermissionRequest
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener
 import com.syuheifujita.android_weather_app.model.WeatherResponseModel
 import com.syuheifujita.android_weather_app.network.WeatherService
+import kotlinx.android.synthetic.main.activity_main.*
 import retrofit2.Call
 import retrofit2.Response
 import retrofit2.Retrofit
@@ -217,8 +218,20 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupUI(weatherList: WeatherResponseModel) {
         for(i in weatherList.weather.indices) {
-            Log.i("Weather Name", weatherList.weather.toString())
+            Log.i("Weather Name", weatherList.weather[i].toString())
 
+            tv_weather.text = weatherList.weather[i].main
+            tv_weather_description.text = weatherList.weather[i].description
+            tv_degree.text = weatherList.main.temp.toString() +
+                    getUnit(application.resources.configuration.locales.toString())
         }
+    }
+
+    private fun getUnit(value: String): String? {
+        var value = "°C"
+        if("US" == value || "LR" == value || "MM" = value) {
+            value = "°F"
+        }
+        return  value
     }
 }
