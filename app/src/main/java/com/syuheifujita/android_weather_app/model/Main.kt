@@ -4,12 +4,12 @@ import java.io.Serializable
 
 data class Main (
 
-    val temp: Double,
-    val pressure: Double,
+    val temp: Int,
+    val pressure: Int,
     val humidity: Int,
-    val temp_min: Double,
-    val temp_max: Double,
-    val sea_level: Double,
-    val gmd_level: Double
+    val temp_min: Int,
+    val temp_max: Int,
+    val sea_level: Int,
+    val gmd_level: Int
 
 ): Serializable

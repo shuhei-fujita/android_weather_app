@@ -4,9 +4,10 @@ import java.io.Serializable
 
 data class Sys (
 
+    val type: Int,
     val message: Double,
     val country: String,
-    val sunrise: Double,
-    val sunset: Double
+    val sunrise: Long,
+    val sunset: Long
 
 ): Serializable
