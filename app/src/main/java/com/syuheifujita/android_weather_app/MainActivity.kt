@@ -24,11 +24,7 @@ import com.karumi.dexter.listener.PermissionRequest
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener
 import com.syuheifujita.android_weather_app.model.WeatherResponseModel
 import com.syuheifujita.android_weather_app.network.WeatherService
-import kotlinx.android.synthetic.main.activity_main.*
-import retrofit2.Call
-import retrofit2.Response
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
+import retrofit.*
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -68,7 +64,6 @@ class MainActivity : AppCompatActivity() {
             .withListener(object : MultiplePermissionsListener {
                 override fun onPermissionsChecked(report: MultiplePermissionsReport?) {
                     if (report!!.areAllPermissionsGranted()) {
-                        // Todo add requestLocationData()
                         requestLocationData()
                     }
 
@@ -89,6 +84,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun isLocationEnabled(): Boolean {
+
         val locationManager: LocationManager =
             getSystemService(Context.LOCATION_SERVICE) as LocationManager
         return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
@@ -98,7 +94,9 @@ class MainActivity : AppCompatActivity() {
     private fun showRationalDialogForPermissions() {
         AlertDialog.Builder(this)
             .setMessage("このアプリではpermissionが必要です")
-            .setPositiveButton("Got to Setting") { _, _ ->
+            .setPositiveButton(
+                "Got to Setting"
+            ) { _, _ ->
                 try {
                     val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
                     val uri = Uri.fromParts("package", packageName, null)
@@ -115,10 +113,16 @@ class MainActivity : AppCompatActivity() {
 
     @SuppressLint("MissingPermission")
     private fun requestLocationData() {
+
         val mLocationRequest = LocationRequest()
         mLocationRequest.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
 
-        mFusedLocationProviderClient.requestLocationUpdates(mLocationRequest, mLocationCallback, Looper.myLooper())
+        mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
+        mFusedLocationProviderClient.requestLocationUpdates(
+            mLocationRequest,
+            mLocationCallback,
+            Looper.myLooper()
+        )
     }
 
     // callbackで位置情報を取得，ここは非同期の処理なので
@@ -137,7 +141,7 @@ class MainActivity : AppCompatActivity() {
 
     // スマホがインターネットに接続されているかcheck
     private fun getLocationWeatherDetail(latitude: Double, longitude: Double) {
-        if(Constant.isNetworkAvailable(this)) {
+        if(Constant.isNetworkAvailable(this@MainActivity)) {
             // スマホがインターネットに接続されている場合
 
             // apiのBaseUrlを作成
@@ -156,36 +160,20 @@ class MainActivity : AppCompatActivity() {
                 latitude, longitude, Constant.METRIC_UNIT, Constant.APP_ID
             )
 
-            showCustomDialog()
+//            showCustomDialog()
 
-            listCall.enqueue(object : retrofit2.Callback<WeatherResponseModel> {
-
-                override fun onFailure(call: Call<WeatherResponseModel>, t: Throwable) {
-                    hideProgressDialog()
-                    Log.e("Errorrrrrr", t!!.message.toString())
-                }
-
-                @SuppressLint("SetTextI18n")
+            listCall.enqueue(object : Callback<WeatherResponseModel> {
+                @SuppressLint("")
                 override fun onResponse(
-                    call: Call<WeatherResponseModel>,
-                    response: Response<WeatherResponseModel>
+                    response: Response<WeatherResponseModel>,
+                    retrofit: Retrofit
                 ) {
-                    if(response.isSuccessful) {
-
-                        hideProgressDialog()
-
-                        val weatherList: WeatherResponseModel? = response.body()
+                    if (response.isSuccess) {
+                        val weatherList: WeatherResponseModel = response.body()
                         Log.i("Response result", "$weatherList")
-
-                        if (weatherList != null) {
-                            setupUI(weatherList)
-                        }
                     } else {
-
-                        hideProgressDialog()
-
                         val rc = response.code()
-                        when(rc){
+                        when(rc) {
                             400 -> {
                                 Log.e("Error 400", "Bad connection")
                             }
@@ -198,52 +186,60 @@ class MainActivity : AppCompatActivity() {
                         }
                     }
                 }
+
+                override fun onFailure(t: Throwable) {
+                    Log.e("Errorrrrrr", t.message.toString())
+                }
             })
 
         } else {
             // スマホがインターネットに接続されていない場合
-
+            Toast.makeText(
+                this@MainActivity,
+                "No internet connection available.",
+                Toast.LENGTH_SHORT
+            ).show()
         }
     }
-
-    private fun showCustomDialog() {
-        mProgressDialog = Dialog(this)
-        mProgressDialog!!.setContentView(R.layout.dialog_custom_progress)
-        mProgressDialog!!.show()
-    }
-
-    private fun hideProgressDialog() {
-        if(mProgressDialog != null){
-            mProgressDialog!!.dismiss()
-        }
-    }
-
-    private fun setupUI(weatherList: WeatherResponseModel) {
-        for(i in weatherList.weather.indices) {
-            Log.i("Weather Name", weatherList.weather[i].toString())
-
-            tv_weather.text = weatherList.weather[i].main
-            tv_weather_description.text = weatherList.weather[i].description
-//            tv_degree.text = weatherList.main.temp.toString() + getUnit(application.resources.configuration.locales.toString())
-
-            tv_sunrise.text = unixTime(weatherList.sys.sunrise)
-            tv_sunset.text = unixTime(weatherList.sys.sunset)
-        }
-    }
-
-    private fun getUnit(value: String): String? {
-        var value = "°C"
+//
+//    private fun showCustomDialog() {
+//        mProgressDialog = Dialog(this)
+//        mProgressDialog!!.setContentView(R.layout.dialog_custom_progress)
+//        mProgressDialog!!.show()
+//    }
+//
+//    private fun hideProgressDialog() {
+//        if(mProgressDialog != null){
+//            mProgressDialog!!.dismiss()
+//        }
+//    }
+//
+//    private fun setupUI(weatherList: WeatherResponseModel) {
+//        for(i in weatherList.weather.indices) {
+//            Log.i("Weather Name", weatherList.weather[i].toString())
+//
+////            tv_weather.text = weatherList.weather[i].main
+////            tv_weather_description.text = weatherList.weather[i].description
+////            tv_degree.text = weatherList.main.temp.toString() + getUnit(application.resources.configuration.locales.toString())
+////
+////            tv_sunrise.text = unixTime(weatherList.sys.sunrise)
+////            tv_sunset.text = unixTime(weatherList.sys.sunset)
+//        }
+//    }
+//
+//    private fun getUnit(value: String): String? {
+//        var value = "°C"
 //        if ("US" == value || "LR" == value || "MM" = value) {
 //            value = "°F"
 //        }
-        return  value
-    }
-
-    private fun unixTime(time: Long) : String? {
-        val date = Date(time * 1000L)
-        val sdf = SimpleDateFormat("HH:mm", Locale.UK)
-        sdf.timeZone = TimeZone.getDefault()
-
-        return sdf.format(date)
-    }
+//        return  value
+//    }
+//
+//    private fun unixTime(time: Long) : String? {
+//        val date = Date(time * 1000L)
+//        val sdf = SimpleDateFormat("HH:mm", Locale.UK)
+//        sdf.timeZone = TimeZone.getDefault()
+//
+//        return sdf.format(date)
+//    }
 }
