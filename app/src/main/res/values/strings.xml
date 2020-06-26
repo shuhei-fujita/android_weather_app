@@ -1,9 +1,9 @@
 <resources>
 
     <string name="app_name">android_weather_app</string>
-
     <string name="please_wait">please_wait&#8230;</string>
-
     <string name="miles_per_hour">miles/hour</string>
 
+<!--    menu-->
+    <string name="action_refrsh">Refresh</string>
 </resources>
