@@ -218,23 +218,30 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupUI(weatherList: WeatherResponseModel) {
         for(i in weatherList.weather.indices) {
-            Log.i("Weather Name", weatherList.weather[i].toString())
+            Log.i("Weather Name", weatherList.weather[i].main)
 
             tv_weather.text = weatherList.weather[i].main
             tv_weather_description.text = weatherList.weather[i].description
             tv_degree.text = weatherList.main.temp.toString() + getUnit(application.resources.configuration.locales.toString())
 
-            tv_sunrise.text = unixTime(weatherList.sys.sunrise)
-            tv_sunset.text = unixTime(weatherList.sys.sunset)
+            tv_humidity.text = weatherList.main.humidity.toString() + " per cent"
+            tv_min.text = weatherList.main.temp_min.toString() + " min"
+            tv_max.text = weatherList.main.temp_max.toString() + " max"
+            tv_speed.text = weatherList.wind.speed.toString()
+            tv_weather.text = weatherList.name
+            tv_country.text = weatherList.sys.country
+            tv_sunrise.text = unixTime(weatherList.sys.sunrise.toLong())
+            tv_sunset.text = unixTime(weatherList.sys.sunset.toLong())
         }
     }
 
     private fun getUnit(value: String): String? {
+        Log.i(" ", value)
         var value = "°C"
-//        if ("US" == value || "LR" == value || "MM" = value) {
-//            value = "°F"
-//        }
-        return  value
+        if ("US" == value || "LR" == value || "MM" == value) {
+            value = "°F"
+        }
+        return value
     }
 
     private fun unixTime(time: Long) : String? {
