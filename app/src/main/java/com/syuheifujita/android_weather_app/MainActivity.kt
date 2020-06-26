@@ -24,6 +24,7 @@ import com.karumi.dexter.listener.PermissionRequest
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener
 import com.syuheifujita.android_weather_app.model.WeatherResponseModel
 import com.syuheifujita.android_weather_app.network.WeatherService
+import kotlinx.android.synthetic.main.activity_main.*
 import retrofit.*
 import java.text.SimpleDateFormat
 import java.util.*
@@ -171,6 +172,7 @@ class MainActivity : AppCompatActivity() {
                     if (response.isSuccess) {
                         val weatherList: WeatherResponseModel = response.body()
                         Log.i("Response result", "$weatherList")
+                        setupUI(weatherList)
                     } else {
                         val rc = response.code()
                         when(rc) {
@@ -201,45 +203,45 @@ class MainActivity : AppCompatActivity() {
             ).show()
         }
     }
-//
-//    private fun showCustomDialog() {
-//        mProgressDialog = Dialog(this)
-//        mProgressDialog!!.setContentView(R.layout.dialog_custom_progress)
-//        mProgressDialog!!.show()
-//    }
-//
-//    private fun hideProgressDialog() {
-//        if(mProgressDialog != null){
-//            mProgressDialog!!.dismiss()
-//        }
-//    }
-//
-//    private fun setupUI(weatherList: WeatherResponseModel) {
-//        for(i in weatherList.weather.indices) {
-//            Log.i("Weather Name", weatherList.weather[i].toString())
-//
-////            tv_weather.text = weatherList.weather[i].main
-////            tv_weather_description.text = weatherList.weather[i].description
-////            tv_degree.text = weatherList.main.temp.toString() + getUnit(application.resources.configuration.locales.toString())
-////
-////            tv_sunrise.text = unixTime(weatherList.sys.sunrise)
-////            tv_sunset.text = unixTime(weatherList.sys.sunset)
-//        }
-//    }
-//
-//    private fun getUnit(value: String): String? {
-//        var value = "°C"
+
+    private fun showCustomDialog() {
+        mProgressDialog = Dialog(this)
+        mProgressDialog!!.setContentView(R.layout.dialog_custom_progress)
+        mProgressDialog!!.show()
+    }
+
+    private fun hideProgressDialog() {
+        if(mProgressDialog != null){
+            mProgressDialog!!.dismiss()
+        }
+    }
+
+    private fun setupUI(weatherList: WeatherResponseModel) {
+        for(i in weatherList.weather.indices) {
+            Log.i("Weather Name", weatherList.weather[i].toString())
+
+            tv_weather.text = weatherList.weather[i].main
+            tv_weather_description.text = weatherList.weather[i].description
+            tv_degree.text = weatherList.main.temp.toString() + getUnit(application.resources.configuration.locales.toString())
+
+            tv_sunrise.text = unixTime(weatherList.sys.sunrise)
+            tv_sunset.text = unixTime(weatherList.sys.sunset)
+        }
+    }
+
+    private fun getUnit(value: String): String? {
+        var value = "°C"
 //        if ("US" == value || "LR" == value || "MM" = value) {
 //            value = "°F"
 //        }
-//        return  value
-//    }
-//
-//    private fun unixTime(time: Long) : String? {
-//        val date = Date(time * 1000L)
-//        val sdf = SimpleDateFormat("HH:mm", Locale.UK)
-//        sdf.timeZone = TimeZone.getDefault()
-//
-//        return sdf.format(date)
-//    }
+        return  value
+    }
+
+    private fun unixTime(time: Long) : String? {
+        val date = Date(time * 1000L)
+        val sdf = SimpleDateFormat("HH:mm:ss", Locale.UK)
+        sdf.timeZone = TimeZone.getDefault()
+
+        return sdf.format(date)
+    }
 }
