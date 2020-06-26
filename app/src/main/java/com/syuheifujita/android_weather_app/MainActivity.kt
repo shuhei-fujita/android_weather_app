@@ -230,8 +230,25 @@ class MainActivity : AppCompatActivity() {
             tv_speed.text = weatherList.wind.speed.toString()
             tv_weather.text = weatherList.name
             tv_country.text = weatherList.sys.country
-            tv_sunrise.text = unixTime(weatherList.sys.sunrise.toLong())
-            tv_sunset.text = unixTime(weatherList.sys.sunset.toLong())
+            tv_sunrise.text = unixTime(weatherList.sys.sunrise)
+            tv_sunset.text = unixTime(weatherList.sys.sunset)
+
+            when(weatherList.weather[i].icon) {
+                "01d" -> iv_weather.setImageResource(R.drawable.sunny)
+                "02d" -> iv_weather.setImageResource(R.drawable.cloud)
+                "03d" -> iv_weather.setImageResource(R.drawable.cloud)
+                "04d" -> iv_weather.setImageResource(R.drawable.cloud)
+                "04n" -> iv_weather.setImageResource(R.drawable.cloud)
+                "10d" -> iv_weather.setImageResource(R.drawable.rain)
+                "11d" -> iv_weather.setImageResource(R.drawable.storm)
+                "13d" -> iv_weather.setImageResource(R.drawable.snowflake)
+                "01n" -> iv_weather.setImageResource(R.drawable.cloud)
+                "02d" -> iv_weather.setImageResource(R.drawable.cloud)
+                "03d" -> iv_weather.setImageResource(R.drawable.cloud)
+                "10n" -> iv_weather.setImageResource(R.drawable.cloud)
+                "11d" -> iv_weather.setImageResource(R.drawable.rain)
+                "13d" -> iv_weather.setImageResource(R.drawable.snowflake)
+            }
         }
     }
 
